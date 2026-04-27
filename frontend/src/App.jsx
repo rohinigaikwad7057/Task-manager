@@ -1,12 +1,6 @@
 import React, { useState } from "react";
-// import Navbar from "./Component/navbar";
-// import Dashboard from "./components/dashboard";
-// import useTasks from "./hooks/useTasks";
-import Navbar from "./Component/navbar";
-import Dashboard from "./Pages/dashboard";
 import useTasks from "./Fetures/Hooks/useTasks";
-import Sidebar from "./Component/sidebar";
-
+import AppRoutes from "./routes/AppRoutes";
 
 const App = () => {
   const [openSidebar, setOpenSidebar] = useState(false);
@@ -34,48 +28,28 @@ const App = () => {
   } = useTasks();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f7fb]">
-
-      {/* Sidebar */}
-      <Sidebar
+    <>
+      <AppRoutes
         openSidebar={openSidebar}
         setOpenSidebar={setOpenSidebar}
+        task={task}
+        input={input}
+        setInput={setInput}
+        priority={priority}
+        setPriority={setPriority}
+        addTask={addTask}
+        deleteTask={deleteTask}
+        onEdit={handleEditClick}
+        moveTask={moveTask}
+        search={search}
+        filterPriority={filterPriority}
+        setSearchParams={setSearchParams}
       />
-
-      {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-
-        {/* Navbar */}
-        <Navbar
-          input={input}
-          setInput={setInput}
-          addTask={addTask}
-          priority={priority}
-          setPriority={setPriority}
-          setOpenSidebar={setOpenSidebar}
-        />
-
-        {/* Dashboard */}
-        <div className="flex-1 overflow-auto">
-          <Dashboard
-            task={task}
-            deleteTask={deleteTask}
-            onEdit={handleEditClick}
-            moveTask={moveTask}
-            search={search}
-            filterPriority={filterPriority}
-            setSearchParams={setSearchParams}
-          />
-        </div>
-
-      </div>
 
       {/* Modal */}
       {editTask && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-
           <div className="bg-white p-6 rounded-xl w-80 space-y-4">
-
             <h2 className="text-lg font-semibold">Edit Task</h2>
 
             <input
@@ -109,11 +83,10 @@ const App = () => {
                 Save
               </button>
             </div>
-
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

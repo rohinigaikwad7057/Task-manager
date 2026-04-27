@@ -1,4 +1,8 @@
+import { useLocation } from "react-router-dom";
+
+
 const Navbar = ({ input, setInput, addTask, priority, setPriority, setOpenSidebar }) => {
+   const location = useLocation();
   return (
    <div className="bg-white px-4 md:px-6 py-3 flex flex-wrap md:flex-nowrap items-center gap-3 border-b">
 
@@ -10,9 +14,11 @@ const Navbar = ({ input, setInput, addTask, priority, setPriority, setOpenSideba
     >
       ☰
     </button>
-    <h1 className="text-lg md:text-xl font-semibold text-gray-700">
-      Dashboard
-    </h1>
+ 
+
+<h1>
+  {location.pathname === "/tasks" ? "Tasks" : "Dashboard"}
+</h1>
   </div>
 
   {/* RIGHT */}

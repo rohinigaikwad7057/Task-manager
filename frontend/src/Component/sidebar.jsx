@@ -1,3 +1,5 @@
+
+import { NavLink } from "react-router-dom";
 const Sidebar = ({ openSidebar, setOpenSidebar }) => {
   return (
     
@@ -29,13 +31,17 @@ const Sidebar = ({ openSidebar, setOpenSidebar }) => {
   onClick={() => setOpenSidebar(false)}
   className="px-3 py-2 rounded-lg cursor-pointer hover:bg-white/20 transition"
 >
+ <NavLink to="/dashboard" className="block py-2">
   Dashboard
+</NavLink>
 </li>
           <li
   onClick={() => setOpenSidebar(false)}
   className="px-3 py-2 rounded-lg cursor-pointer hover:bg-white/20 transition"
 >
-Task
+<NavLink to="/tasks" className="block py-2">
+  Task
+</NavLink>
 </li>
         </ul>
       </div>

@@ -1,35 +1,66 @@
 const express = require("express");
 const router = express.Router();
-// const Task = require("../models/taskModules");
-const Task = require("../models/taskModel")
+const Task = require("../models/taskModel");
+const protect = require("../middleware/authMiddleware");
 
-// GET all tasks
-router.get("/", async (req, res) => {
-  const tasks = await Task.find().sort({ createdAt: -1 });
-  res.json(tasks);
+// GET TASKS
+router.get("/", protect, async (req, res) => {
+  try {
+    const tasks = await Task.find({ user: req.user.id })
+      .sort({ createdAt: -1 });
+
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// ADD task
-router.post("/", async (req, res) => {
-  const task = new Task(req.body);
-  const saved = await task.save();
-  res.json(saved);
+// ADD TASK
+router.post("/", protect, async (req, res) => {
+  try {
+    const task = new Task({
+      ...req.body,
+      user: req.user.id,
+    });
+
+    const saved = await task.save();
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// DELETE task
-router.delete("/:id", async (req, res) => {
-  await Task.findByIdAndDelete(req.params.id);
- res.json({ success: true });
+// DELETE TASK
+router.delete("/:id", protect, async (req, res) => {
+  const task = await Task.findById(req.params.id);
+
+  if (!task) return res.status(404).json({ message: "Task not found" });
+
+  if (task.user.toString() !== req.user.id) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
+
+  await task.deleteOne();
+  res.json({ success: true });
 });
 
-// UPDATE task
-router.put("/:id", async (req, res) => {
+// UPDATE TASK
+router.put("/:id", protect, async (req, res) => {
+  const task = await Task.findById(req.params.id);
+
+  if (!task) return res.status(404).json({ message: "Task not found" });
+
+  if (task.user.toString() !== req.user.id) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
+
   const updated = await Task.findByIdAndUpdate(
     req.params.id,
     req.body,
     { new: true }
   );
-res.json({ success: true });
+
+  res.json(updated);
 });
 
 module.exports = router;

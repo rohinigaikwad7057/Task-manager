@@ -6,6 +6,7 @@ const Navbar = ({ input, setInput, priority, setPriority, addTask, ...props }) =
 
 
   const isTaskPage = location.pathname === "/tasks";
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -68,6 +69,13 @@ const Navbar = ({ input, setInput, priority, setPriority, addTask, ...props }) =
           >
             + Add Task
           </button>
+          <div
+
+            className="cursor-pointer w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold hover:bg-blue-600 transition"
+            title={user?.name || "User"}
+          >
+            {user?.name?.charAt(0).toUpperCase() || "U"}
+          </div>
 
 
           <button

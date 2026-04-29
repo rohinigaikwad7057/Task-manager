@@ -141,13 +141,13 @@ const Auth = ({ initialMode = "login" }) => {
         </div>
          <div className="rounded-3xl border border-white/10 bg-slate-900/90 p-7">
         {mode === "signup" && (
-          <input
-           type="text"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange("name")}
-            className="w-full p-2 rounded bg-slate-800"
-          />
+         <input
+         type="text"
+          placeholder="Name"
+          value={formData.name}
+          onChange={handleChange("name")}
+          className="w-full mb-3 p-3 rounded-xl bg-slate-950 border border-slate-800"
+        />
         )}
 
         <input

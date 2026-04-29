@@ -15,7 +15,7 @@ const Navbar = ({ input, setInput, priority, setPriority, addTask, ...props }) =
   };
 
   return (
-    <div className="bg-white px-4 md:px-6 py-3 flex justify-between items-center border-b">
+    <div className="bg-white px-4 md:px-6 py-3 flex justify-between items-center border-b gap-3">
 
       {/* LEFT */}
       <div className="flex items-center gap-2">
@@ -65,8 +65,11 @@ const Navbar = ({ input, setInput, priority, setPriority, addTask, ...props }) =
 
           <button
             onClick={() => navigate("/tasks")}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm"
-          >
+             className="bg-blue-500 hover:bg-blue-600 text-white 
+             px-2 py-1 text-xs 
+             md:px-3 md:py-1.5 md:text-sm 
+             rounded whitespace-nowrap"
+>
             + Add Task
           </button>
           <div

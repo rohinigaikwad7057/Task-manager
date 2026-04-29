@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast"; 
 
 const API_URL = "http://localhost:5000/api/tasks";
 
@@ -23,7 +24,7 @@ const useTasks = () => {
 
   const token = localStorage.getItem("token");
 
-  // ✅ API HANDLER (memoized)
+  //API HANDLER
   const apiCall = useCallback(
     async (url, options = {}) => {
       if (!token) return null;
@@ -47,13 +48,14 @@ const useTasks = () => {
       } catch (err) {
         console.error(err);
         setError("Something went wrong");
+        toast.error("Server error"); 
         return null;
       }
     },
     [token, navigate]
   );
 
-  // FETCH TASKS (fixed dependencies)
+  // FETCH TASKS
   const fetchTasks = useCallback(async () => {
     if (!token) return;
 
@@ -70,9 +72,12 @@ const useTasks = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // ✅ ADD TASK
+  //  ADD TASK
   const addTask = async () => {
-    if (!input.trim()) return;
+    if (!input.trim()) {
+      toast.error("Task cannot be empty");
+      return;
+    }
 
     const newTask = await apiCall(API_URL, {
       method: "POST",
@@ -86,33 +91,42 @@ const useTasks = () => {
     if (newTask) {
       setTask((prev) => [newTask, ...prev]);
       setInput("");
+
+      toast.success("Task added successfully 🎉"); 
+    } else {
+      toast.error("Failed to add task");
     }
   };
 
-  // DELETE TASK
+  // DELETE
   const deleteTask = async (id) => {
-    await apiCall(`${API_URL}/${id}`, {
+    const res = await apiCall(`${API_URL}/${id}`, {
       method: "DELETE",
     });
 
-    setTask((prev) => prev.filter((t) => t._id !== id));
+    if (res !== null) {
+      setTask((prev) => prev.filter((t) => t._id !== id));
+      toast.success("Task deleted successfully"); 
+    }
   };
 
-  // MOVE TASK
+  // MOVE
   const moveTask = async (id, status) => {
-    await apiCall(`${API_URL}/${id}`, {
+    const res = await apiCall(`${API_URL}/${id}`, {
       method: "PUT",
       body: JSON.stringify({ status }),
     });
 
-    setTask((prev) =>
-      prev.map((t) =>
-        t._id === id ? { ...t, status } : t
-      )
-    );
+    if (res !== null) {
+      setTask((prev) =>
+        prev.map((t) =>
+          t._id === id ? { ...t, status } : t
+        )
+      );
+    }
   };
 
-  // EDIT TASK
+  // EDIT
   const handleEditClick = (task) => {
     setEditTask(task);
     setEditTitle(task.title);
@@ -136,6 +150,7 @@ const useTasks = () => {
       );
 
       setEditTask(null);
+      toast.success("Task updated successfully"); 
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useTasks from "./Fetures/Hooks/useTasks";
 import AppRoutes from "./routes/AppRoutes";
+import { Toaster } from "react-hot-toast"; 
 
 const App = () => {
   const [openSidebar, setOpenSidebar] = useState(false);
@@ -29,6 +30,9 @@ const App = () => {
 
   return (
     <>
+      {/* GLOBAL TOASTER */}
+      <Toaster position="top-center" reverseOrder={false} />
+
       <AppRoutes
         openSidebar={openSidebar}
         setOpenSidebar={setOpenSidebar}

@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/tasks";
+//  ENV BASE URL
+const API_URL = `${import.meta.env.VITE_API_URL}/api/tasks`;
 
 const useTasks = () => {
   const [task, setTask] = useState([]);
@@ -48,7 +49,7 @@ const useTasks = () => {
       } catch (err) {
         console.error(err);
         setError("Something went wrong");
-        toast.error("Server error"); 
+        toast.error("Server error");
         return null;
       }
     },
@@ -57,8 +58,6 @@ const useTasks = () => {
 
   // FETCH TASKS
   const fetchTasks = useCallback(async () => {
-    if (!token) return;
-
     setLoading(true);
 
     const data = await apiCall(API_URL);
@@ -66,7 +65,7 @@ const useTasks = () => {
     if (data) setTask(data);
 
     setLoading(false);
-  }, [apiCall, token]);
+  }, [apiCall]);
 
   useEffect(() => {
     fetchTasks();
@@ -133,6 +132,7 @@ const useTasks = () => {
     setEditPriority(task.priority);
   };
 
+  // SAVE EDIT
   const saveEditTask = async () => {
     const updated = await apiCall(`${API_URL}/${editTask._id}`, {
       method: "PUT",
@@ -150,7 +150,7 @@ const useTasks = () => {
       );
 
       setEditTask(null);
-      toast.success("Task updated successfully"); 
+      toast.success("Task updated successfully");
     }
   };
 

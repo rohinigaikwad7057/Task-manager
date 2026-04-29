@@ -1,7 +1,8 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
+
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const Auth = ({ initialMode = "login" }) => {
   const [mode, setMode] = useState(initialMode);
@@ -10,8 +11,10 @@ const Auth = ({ initialMode = "login" }) => {
     email: "",
     password: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const switchMode = (nextMode) => {
@@ -19,16 +22,18 @@ const Auth = ({ initialMode = "login" }) => {
     setMode(nextMode);
   };
 
-  const handleChange = (field) => (event) => {
-    setFormData((prev) => ({ ...prev, [field]: event.target.value }));
+  const handleChange = (field) => (e) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
   const handleSubmit = async () => {
     setError("");
 
-    //  VALIDATION
-    if (!formData.email || !formData.password || (mode === "signup" && !formData.name)) {
-      setError("Please fill in all required fields.");
+    if (
+      !formData.email ||
+      !formData.password ||
+      (mode === "signup" && !formData.name)
+    ) {
       toast.error("Please fill all fields");
       return;
     }
@@ -36,49 +41,55 @@ const Auth = ({ initialMode = "login" }) => {
     setLoading(true);
 
     try {
-      const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
+      const endpoint =
+        mode === "login" ? "/api/auth/login" : "/api/auth/signup";
 
-      const body =
-        mode === "login"
-          ? { email: formData.email, password: formData.password }
-          : { name: formData.name, email: formData.email, password: formData.password };
-
-      const response = await fetch("http://localhost:5000" + endpoint, {
+      const response = await fetch(BASE_URL + endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          mode === "login"
+            ? {
+                email: formData.email,
+                password: formData.password,
+              }
+            : {
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+              }
+        ),
       });
 
       const data = await response.json();
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        //  SUCCESS TOAST
-        toast.success(
-          mode === "login"
-            ? "Login successful 🎉"
-            : "Account created successfully 🚀"
-        );
-
-        navigate("/dashboard");
-      } else {
-        const msg = data.message || "Authentication failed.";
-        setError(msg);
-        toast.error(msg); 
+      if (!response.ok) {
+        throw new Error(data.message || "Auth failed");
       }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      toast.success(
+        mode === "login"
+          ? "Login successful 🎉"
+          : "Account created 🚀"
+      );
+
+      navigate("/dashboard");
     } catch (err) {
-      console.error("Server error:", err);
-      setError("Server error. Please try again later.");
-      toast.error("Server error");
+      console.error(err);
+      toast.error(err.message || "Server error");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-10">
+       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-6xl overflow-hidden rounded-4xl shadow-2xl ring-1 ring-white/10 bg-slate-900/90 backdrop-blur-xl md:grid md:grid-cols-[1.2fr_1fr]">
         
         {/* LEFT SIDE */}
@@ -106,7 +117,7 @@ const Auth = ({ initialMode = "login" }) => {
 
           {/* SWITCH */}
           <div className="mb-6 flex gap-3">
-            <button
+          <button
               onClick={() => switchMode("login")}
               className={`px-5 py-2 rounded-full text-sm font-semibold ${
                 mode === "login"
@@ -117,7 +128,7 @@ const Auth = ({ initialMode = "login" }) => {
               Login
             </button>
 
-            <button
+           <button
               onClick={() => switchMode("signup")}
               className={`px-5 py-2 rounded-full text-sm font-semibold ${
                 mode === "signup"
@@ -127,54 +138,46 @@ const Auth = ({ initialMode = "login" }) => {
             >
               Sign Up
             </button>
-          </div>
+        </div>
+         <div className="rounded-3xl border border-white/10 bg-slate-900/90 p-7">
+        {mode === "signup" && (
+          <input
+           type="text"
+            placeholder="Name"
+            value={formData.name}
+            onChange={handleChange("name")}
+            className="w-full p-2 rounded bg-slate-800"
+          />
+        )}
 
-          {/* FORM */}
-          <div className="rounded-3xl border border-white/10 bg-slate-900/90 p-7">
+        <input
+         type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange("email")}
+          className="w-full mb-3 p-3 rounded-xl bg-slate-950 border border-slate-800"
+        />
 
-            {mode === "signup" && (
-              <input
-                type="text"
-                placeholder="Name"
-                value={formData.name}
-                onChange={handleChange("name")}
-                className="w-full mb-3 p-3 rounded-xl bg-slate-950 border border-slate-800"
-              />
-            )}
+        <input
+          type="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange("password")}
+           className="w-full mb-3 p-3 rounded-xl bg-slate-950 border border-slate-800"
+        />
 
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange("email")}
-              className="w-full mb-3 p-3 rounded-xl bg-slate-950 border border-slate-800"
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange("password")}
-              className="w-full mb-3 p-3 rounded-xl bg-slate-950 border border-slate-800"
-            />
-
-            {error && (
+       {error && (
               <p className="text-red-400 text-sm mb-3">{error}</p>
             )}
 
-            <button
-              onClick={handleSubmit}
-              disabled={
-                loading ||
-                !formData.email ||
-                !formData.password ||
-                (mode === "signup" && !formData.name)
-              }
-              className="w-full bg-sky-500 py-3 rounded-xl text-black font-semibold disabled:opacity-50"
-            >
-              {loading ? "Processing..." : mode === "login" ? "Login" : "Create account"}
-            </button>
-          </div>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+           className="w-full bg-sky-500 py-3 rounded-xl text-black font-semibold disabled:opacity-50"
+        >
+          {loading ? "Loading..." : mode === "login" ? "Login" : "Signup"}
+        </button>
+        </div>
         </div>
       </div>
     </div>

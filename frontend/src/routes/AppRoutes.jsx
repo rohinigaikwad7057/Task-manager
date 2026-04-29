@@ -1,49 +1,37 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import Dashboard from "../Pages/dashboard";
 import LandingDashboard from "../Pages/landingDashboard";
 import Layout from "../Component/Layout";
-import Login from "../Pages/Login";
+import Auth from "../Pages/Auth";
 import ProtectedRoute from "./ProtectedRoute";
-import Signup from "../Pages/Signup";
 
 const AppRoutes = (props) => {
     const token = localStorage.getItem("token");
     const isAuth = token !== null;
+    const [searchParams] = useSearchParams();
+    const authMode = searchParams.get("mode") || "login";
 
     return (
         <Routes>
 
             {/* ROOT */}
-            <Route
-                path="/"
-                element={
-                    isAuth ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
-                }
-            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            <Route
-                path="/login"
-                element={
-                    isAuth ? <Navigate to="/dashboard" /> : <Login />
-                }
-            />
+            <Route path="/login" element={<Navigate to="/dashboard?mode=login" replace />} />
 
-            <Route
-                path="/signup"
-                element={
-                    isAuth ? <Navigate to="/dashboard" /> : <Signup />
-                }
-            />
+            <Route path="/signup" element={<Navigate to="/dashboard?mode=signup" replace />} />
 
             {/* DASHBOARD */}
             <Route
                 path="/dashboard"
                 element={
-                    <ProtectedRoute>
+                    isAuth ? (
                         <Layout {...props}>
                             <LandingDashboard />
                         </Layout>
-                    </ProtectedRoute>
+                    ) : (
+                        <Auth initialMode={authMode} />
+                    )
                 }
             />
 
@@ -58,6 +46,8 @@ const AppRoutes = (props) => {
                     </ProtectedRoute>
                 }
             />
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
 
         </Routes>
     );

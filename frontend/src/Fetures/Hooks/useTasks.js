@@ -12,101 +12,107 @@ const useTasks = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editPriority, setEditPriority] = useState("medium");
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const search = searchParams.get("search") || "";
   const filterPriority = searchParams.get("priority") || "all";
 
-  // AUTH HEADER
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-  };
+  // ✅ API HANDLER (memoized)
+  const apiCall = useCallback(
+    async (url, options = {}) => {
+      if (!token) return null;
 
-  // SINGLE SOURCE OF TRUTH
-  const fetchTasks = useCallback(async () => {
-    try {
-      const res = await fetch(API_URL, {
-        headers: getAuthHeaders(),
-      });
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          ...options,
+        });
 
-      if (res.status === 401) {
-        localStorage.removeItem("token");
-        navigate("/login");
-        return;
+        if (res.status === 401) {
+          localStorage.clear();
+          navigate("/login");
+          return null;
+        }
+
+        return await res.json();
+      } catch (err) {
+        console.error(err);
+        setError("Something went wrong");
+        return null;
       }
+    },
+    [token, navigate]
+  );
 
-      const data = await res.json();
-      setTask(data);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [navigate]);
+  // FETCH TASKS (fixed dependencies)
+  const fetchTasks = useCallback(async () => {
+    if (!token) return;
+
+    setLoading(true);
+
+    const data = await apiCall(API_URL);
+
+    if (data) setTask(data);
+
+    setLoading(false);
+  }, [apiCall, token]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // ADD TASK
+  // ✅ ADD TASK
   const addTask = async () => {
     if (!input.trim()) return;
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          title: input,
-          status: "todo",
-          priority,
-        }),
-      });
+    const newTask = await apiCall(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        title: input,
+        status: "todo",
+        priority,
+      }),
+    });
 
-      const newTask = await res.json();
-
+    if (newTask) {
       setTask((prev) => [newTask, ...prev]);
-
       setInput("");
-    } catch (err) {
-      console.error(err);
     }
   };
 
-  // DELETE
+  // DELETE TASK
   const deleteTask = async (id) => {
-    await fetch(`${API_URL}/${id}`, {
+    await apiCall(`${API_URL}/${id}`, {
       method: "DELETE",
-      headers: getAuthHeaders(),
     });
 
     setTask((prev) => prev.filter((t) => t._id !== id));
   };
 
-  // MOVE
+  // MOVE TASK
   const moveTask = async (id, status) => {
-    try {
-      await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ status }),
-      });
+    await apiCall(`${API_URL}/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    });
 
-      setTask((prev) =>
-        prev.map((t) =>
-          t._id === id ? { ...t, status } : t
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    setTask((prev) =>
+      prev.map((t) =>
+        t._id === id ? { ...t, status } : t
+      )
+    );
   };
 
-  // EDIT
+  // EDIT TASK
   const handleEditClick = (task) => {
     setEditTask(task);
     setEditTitle(task.title);
@@ -114,28 +120,29 @@ const useTasks = () => {
   };
 
   const saveEditTask = async () => {
-    const res = await fetch(`${API_URL}/${editTask._id}`, {
+    const updated = await apiCall(`${API_URL}/${editTask._id}`, {
       method: "PUT",
-      headers: getAuthHeaders(),
       body: JSON.stringify({
         title: editTitle,
         priority: editPriority,
       }),
     });
 
-    const updated = await res.json();
+    if (updated) {
+      setTask((prev) =>
+        prev.map((t) =>
+          t._id === updated._id ? updated : t
+        )
+      );
 
-    setTask((prev) =>
-      prev.map((t) =>
-        t._id === updated._id ? updated : t
-      )
-    );
-
-    setEditTask(null);
+      setEditTask(null);
+    }
   };
 
   return {
     task,
+    loading,
+    error,
     input,
     setInput,
     priority,

@@ -15,6 +15,8 @@ const Dashboard = ({
 
   const debouncedSearch = useDebounce(search, 400);
 
+  const isDisabled = task.length === 0;
+
   // FILTER LOGIC
   const filteredTasks = task.filter((t) => {
     const title = t?.title?.toLowerCase() || "";
@@ -29,6 +31,33 @@ const Dashboard = ({
 
     return matchesSearch && matchesPriority;
   });
+
+  const isFilteredEmpty = filteredTasks.length === 0;
+
+  // EMPTY STATE (SaaS style)
+  if (task.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6">
+        <div>
+
+          {/* Illustration */}
+         
+
+          {/* Heading */}
+          <h2 className="text-lg font-semibold text-gray-700">
+            No tasks yet
+          </h2>
+
+          {/* Subtext */}
+          <p className="text-sm text-gray-500 mt-1">
+            You haven’t added any tasks. Start organizing your work 🚀
+          </p>
+
+
+        </div>
+      </div>
+    );
+  }
 
   // CREATE COLUMNS
   const columns = {
@@ -46,14 +75,11 @@ const Dashboard = ({
     const sourceCol = source.droppableId;
     const destCol = destination.droppableId;
 
-   const draggedTask = columns[sourceCol]?.[source.index];
+    const draggedTask = columns[sourceCol]?.[source.index];
+    if (!draggedTask) return;
 
-if (!draggedTask) return;
-
-    // prevent same column reorder
     if (sourceCol === destCol) return;
 
-    // FIXED (_id)
     moveTask(draggedTask._id, destCol);
   };
 
@@ -63,6 +89,7 @@ if (!draggedTask) return;
       {/* FILTER BAR */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
 
+        {/* SEARCH */}
         <input
           value={search}
           onChange={(e) =>
@@ -71,15 +98,21 @@ if (!draggedTask) return;
               priority: filterPriority,
             })
           }
-          placeholder="Search tasks..."
-          className="px-3 py-1.5 border border-gray-200 rounded-full text-sm w-44 
-               focus:outline-none focus:ring-1 focus:ring-blue-400"
+          placeholder={isDisabled ? "No tasks to search" : "Search tasks..."}
+          disabled={isDisabled}
+          className={`px-3 py-1.5 border rounded-full text-sm w-44 
+            ${isDisabled
+              ? "bg-gray-100 cursor-not-allowed border-gray-200"
+              : "border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            }`}
         />
 
+        {/* PRIORITY FILTER */}
         <div className="flex items-center gap-2">
           {["all", "low", "medium", "high"].map((p) => (
             <button
               key={p}
+              disabled={isDisabled}
               onClick={() =>
                 setSearchParams({
                   search,
@@ -90,22 +123,32 @@ if (!draggedTask) return;
                 filterPriority === p
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100"
-              }`}
+              } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {p}
             </button>
           ))}
         </div>
 
+        {/* CLEAR */}
         {(search || filterPriority !== "all") && (
           <button
-            onClick={() => setSearchParams({})}
-            className="text-xs text-gray-500 hover:text-red-500"
+            disabled={isDisabled}
+            onClick={() =>
+              setSearchParams({
+                search: "",
+                priority: "all",
+              })
+            }
+            className={`text-xs ${
+              isDisabled
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-red-500"
+            }`}
           >
             Clear ✕
           </button>
         )}
-
       </div>
 
       {/* DRAG & DROP */}
@@ -127,14 +170,19 @@ if (!draggedTask) return;
 
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
 
+                    {/* EMPTY COLUMN MESSAGE */}
                     {tasks.length === 0 && (
-                      <p className="text-gray-400 text-sm">No tasks</p>
+                      <p className="text-gray-400 text-sm">
+                        {isFilteredEmpty
+                          ? "No matching tasks"
+                          : "No tasks"}
+                      </p>
                     )}
 
                     {tasks.map((t, index) => (
                       <Draggable
-                        key={t._id} 
-                        draggableId={t._id.toString()} 
+                        key={t._id}
+                        draggableId={t._id.toString()}
                         index={index}
                       >
                         {(provided) => (
@@ -145,7 +193,7 @@ if (!draggedTask) return;
                           >
                             <TaskCard
                               task={t}
-                              onDelete={() => deleteTask(t._id)} 
+                              onDelete={() => deleteTask(t._id)}
                               onEdit={() => onEdit(t)}
                             />
                           </div>

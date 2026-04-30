@@ -10,7 +10,8 @@ const Dashboard = ({
   moveTask,
   search,
   filterPriority,
-  setSearchParams
+  setSearchParams,
+  handleDateChange
 }) => {
 
   const debouncedSearch = useDebounce(search, 400);
@@ -41,7 +42,7 @@ const Dashboard = ({
         <div>
 
           {/* Illustration */}
-         
+
 
           {/* Heading */}
           <h2 className="text-lg font-semibold text-gray-700">
@@ -119,11 +120,10 @@ const Dashboard = ({
                   priority: p,
                 })
               }
-              className={`px-3 py-1 rounded-full text-xs ${
-                filterPriority === p
+              className={`px-3 py-1 rounded-full text-xs ${filterPriority === p
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100"
-              } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {p}
             </button>
@@ -140,11 +140,10 @@ const Dashboard = ({
                 priority: "all",
               })
             }
-            className={`text-xs ${
-              isDisabled
+            className={`text-xs ${isDisabled
                 ? "text-gray-300 cursor-not-allowed"
                 : "text-gray-500 hover:text-red-500"
-            }`}
+              }`}
           >
             Clear ✕
           </button>
@@ -164,8 +163,20 @@ const Dashboard = ({
                   className="bg-white rounded-xl shadow-md flex flex-col min-h-300px md:h-[calc(100vh-120px)]"
                 >
 
-                  <div className="px-4 py-3 border-b font-semibold text-gray-700 capitalize">
-                    {key} ({tasks.length})
+                  <div className="px-4 py-3 border-b">
+
+                    {/* Title */}
+                    <div className="font-semibold text-gray-700 capitalize">
+                      {key} ({tasks.length})
+                    </div>
+
+                    {/* Subtitle */}
+                    <p className="text-xs text-gray-400 mt-1">
+                      {key === "todo" && "You need to start"}
+                      {key === "progress" && "You are currently working on"}
+                      {key === "completed" && "Great job 🎉"}
+                    </p>
+
                   </div>
 
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -195,6 +206,7 @@ const Dashboard = ({
                               task={t}
                               onDelete={() => deleteTask(t._id)}
                               onEdit={() => onEdit(t)}
+                              onDateChange={handleDateChange}
                             />
                           </div>
                         )}

@@ -179,7 +179,7 @@ const useTasks = () => {
         )
       );
 
-      toast.success("Date updated 📅");
+      toast.success("Date updated");
     }
   };
 

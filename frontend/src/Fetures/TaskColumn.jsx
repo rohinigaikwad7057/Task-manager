@@ -8,6 +8,7 @@ const TaskColumn = ({
   onAction,
   deleteTask,
   onEdit,
+  onDateChange
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-md flex flex-col min-h-300px md:h-[calc(100vh-120px)]">
@@ -27,11 +28,12 @@ const TaskColumn = ({
         ) : (
           tasks.map((t) => (
             <TaskCard
-              key={t.id}
+              key={t._id}
               task={t}
-              onStart={actionType === "start" ? () => onAction(t.id) : null}
-              onComplete={actionType === "complete" ? () => onAction(t.id) : null}
-              onDelete={() => deleteTask(t.id)}
+              onDateChange={onDateChange}
+              onStart={actionType === "start" ? () => onAction(t._id) : null}
+              onComplete={actionType === "complete" ? () => onAction(t._id) : null}
+              onDelete={() => deleteTask(t._id)}
               onEdit={onEdit ? () => onEdit(t) : null}
             />
           ))

@@ -91,7 +91,7 @@ const useTasks = () => {
       setTask((prev) => [newTask, ...prev]);
       setInput("");
 
-      toast.success("Task added successfully 🎉"); 
+      toast.success("Task added successfully 🎉");
     } else {
       toast.error("Failed to add task");
     }
@@ -105,21 +105,28 @@ const useTasks = () => {
 
     if (res !== null) {
       setTask((prev) => prev.filter((t) => t._id !== id));
-      toast.success("Task deleted successfully"); 
+      toast.success("Task deleted successfully");
     }
   };
 
   // MOVE
   const moveTask = async (id, status) => {
+
+    setTask((prev) =>
+      prev.map((t) =>
+        t._id === id ? { ...t, status } : t
+      )
+    );
+
     const res = await apiCall(`${API_URL}/${id}`, {
       method: "PUT",
       body: JSON.stringify({ status }),
     });
 
-    if (res !== null) {
+    if (!res) {
       setTask((prev) =>
         prev.map((t) =>
-          t._id === id ? { ...t, status } : t
+          t._id === id ? { ...t, status: t.status } : t
         )
       );
     }
@@ -152,6 +159,28 @@ const useTasks = () => {
       setEditTask(null);
       toast.success("Task updated successfully");
     }
+
+  };
+
+  const handleDateChange = async (id, date) => {
+    // update in backend
+    const updated = await apiCall(`${API_URL}/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        createdAt: date,
+      }),
+    });
+
+    // update UI
+    if (updated) {
+      setTask((prev) =>
+        prev.map((t) =>
+          t._id === id ? { ...t, createdAt: date } : t
+        )
+      );
+
+      toast.success("Date updated 📅");
+    }
   };
 
   return {
@@ -171,6 +200,7 @@ const useTasks = () => {
     editPriority,
     setEditPriority,
     handleEditClick,
+    handleDateChange,
     saveEditTask,
     setEditTask,
     search,

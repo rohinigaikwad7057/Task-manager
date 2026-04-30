@@ -25,7 +25,8 @@ const App = () => {
     moveTask,
     search,
     filterPriority,
-    setSearchParams
+    setSearchParams,
+    handleDateChange   
   } = useTasks();
 
   return (
@@ -48,6 +49,7 @@ const App = () => {
         search={search}
         filterPriority={filterPriority}
         setSearchParams={setSearchParams}
+         handleDateChange={handleDateChange}
       />
 
       {/* Modal */}
